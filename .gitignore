@@ -1,0 +1,27 @@
+# Godot 4+ specific ignores
+.godot/
+android/
+
+# Build outputs (too large for git)
+*.exe
+*.pck
+*.apk
+*.idsig
+PVZ卡牌游戏_发布版/
+
+# Godot import cache (auto-regenerated)
+*.import
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temp/debug files
+fix_bug1_client_phase.txt

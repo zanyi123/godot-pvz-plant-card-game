@@ -1,0 +1,420 @@
+[gd_scene format=3 uid="uid://bh3vcjd0y0bny"]
+
+[ext_resource type="Texture2D" uid="uid://by4sr2g7q0sy7" path="res://assets/images/bg_battle_table.jpg" id="1"]
+[ext_resource type="Script" uid="uid://cdvweu7wju0pv" path="res://scripts/game_board.gd" id="2"]
+[ext_resource type="FontFile" uid="uid://b8ckr37nhbf8q" path="res://assets/fonts/simhei.ttf" id="3"]
+[ext_resource type="Texture2D" uid="uid://d1h34xp8x2h4g" path="res://assets/images/bg_meirenkao(1).png" id="4"]
+
+[node name="GameBoard" type="Control" unique_id=1399385305]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("2")
+
+[node name="BgFillTop" type="TextureRect" parent="." unique_id=2010684335]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = -62.0
+offset_bottom = 129.0
+grow_horizontal = 2
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="BgFillBottom" type="TextureRect" parent="." unique_id=600642819]
+layout_mode = 1
+anchors_preset = 12
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 363.0
+offset_bottom = 805.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4")
+expand_mode = 1
+stretch_mode = 1
+flip_v = true
+
+[node name="Background" type="TextureRect" parent="." unique_id=728239144]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DarkOverlay" type="ColorRect" parent="." unique_id=760918238]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.39)
+
+[node name="OpponentZone" type="Panel" parent="." unique_id=1255744469]
+layout_mode = 1
+offset_left = 280.0
+offset_top = 20.0
+offset_right = 920.0
+offset_bottom = 190.0
+
+[node name="P2HandContainer" type="HBoxContainer" parent="OpponentZone" unique_id=1261223690]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 40.0
+offset_right = 630.0
+offset_bottom = 162.0
+theme_override_constants/separation = 6
+
+[node name="Battlefield" type="Panel" parent="." unique_id=1448262734]
+layout_mode = 1
+offset_left = 80.0
+offset_top = 210.0
+offset_right = 804.0
+offset_bottom = 510.0
+
+[node name="P2SlotLabel" type="Label" parent="Battlefield" unique_id=575015913]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 40.0
+offset_right = 160.0
+offset_bottom = 56.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 14
+text = "P2 出牌区"
+
+[node name="P2SlotContainer" type="HBoxContainer" parent="Battlefield" unique_id=1888746466]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 56.0
+offset_right = 160.0
+offset_bottom = 130.0
+theme_override_constants/separation = 2
+
+[node name="PhaseHint" type="Label" parent="Battlefield" unique_id=56795214]
+layout_mode = 1
+offset_left = 100.0
+offset_top = 145.0
+offset_right = 620.0
+offset_bottom = 170.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+
+[node name="P1SlotLabel" type="Label" parent="Battlefield" unique_id=1370758867]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 170.0
+offset_right = 160.0
+offset_bottom = 186.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 14
+text = "P1 出牌区"
+
+[node name="P1SlotContainer" type="HBoxContainer" parent="Battlefield" unique_id=1496225505]
+layout_mode = 1
+offset_left = 40.0
+offset_top = 186.0
+offset_right = 160.0
+offset_bottom = 260.0
+theme_override_constants/separation = 2
+
+[node name="HistoryArea" type="HBoxContainer" parent="Battlefield" unique_id=202046535]
+layout_mode = 1
+offset_left = 414.0
+offset_top = 10.0
+offset_right = 714.0
+offset_bottom = 290.0
+theme_override_constants/separation = 10
+
+[node name="DeckZone" type="Panel" parent="." unique_id=1116117298]
+layout_mode = 1
+offset_left = 844.0
+offset_top = 270.0
+offset_right = 964.0
+offset_bottom = 490.0
+
+[node name="DeckLabel" type="Label" parent="DeckZone" unique_id=1540572130]
+layout_mode = 1
+offset_left = 14.0
+offset_top = 20.0
+offset_right = 106.0
+offset_bottom = 84.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 18
+text = "Deck 44"
+horizontal_alignment = 1
+
+[node name="DeckHint" type="Label" parent="DeckZone" unique_id=571195547]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 88.0
+offset_right = 110.0
+offset_bottom = 104.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 12
+text = "点击结束出牌"
+horizontal_alignment = 1
+
+[node name="P1HandZone" type="Panel" parent="." unique_id=664526603]
+layout_mode = 1
+offset_left = 100.0
+offset_top = 608.0
+offset_right = 900.0
+offset_bottom = 750.0
+
+[node name="P1HandContainer" type="HBoxContainer" parent="P1HandZone" unique_id=574695749]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 670.0
+offset_bottom = 130.0
+theme_override_constants/separation = 16
+
+[node name="P2HPBar" type="ProgressBar" parent="." unique_id=635559784]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 22.0
+offset_right = 280.0
+offset_bottom = 42.0
+max_value = 10.0
+value = 10.0
+show_percentage = false
+
+[node name="P2HPLabel" type="Label" parent="." unique_id=1835940164]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 3.0
+offset_right = 280.0
+offset_bottom = 22.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 14
+text = "P2 HP: 10/10"
+
+[node name="P2ManaDots" type="Control" parent="." unique_id=815568822]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 60.0
+offset_top = 45.0
+offset_right = 160.0
+offset_bottom = 75.0
+
+[node name="P1HPBar" type="ProgressBar" parent="." unique_id=769748555]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 548.0
+offset_right = 280.0
+offset_bottom = 568.0
+max_value = 10.0
+value = 10.0
+show_percentage = false
+
+[node name="P1HPLabel" type="Label" parent="." unique_id=328767818]
+layout_mode = 1
+offset_left = 60.0
+offset_top = 528.0
+offset_right = 280.0
+offset_bottom = 548.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 14
+text = "P1 HP: 10/10  Mana: 5/5"
+
+[node name="P1ManaDots" type="Control" parent="." unique_id=1929841]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 60.0
+offset_top = 572.0
+offset_right = 160.0
+offset_bottom = 602.0
+
+[node name="TimerLabel" type="Label" parent="." unique_id=978979805]
+layout_mode = 1
+offset_left = 664.0
+offset_top = 24.0
+offset_right = 1024.0
+offset_bottom = 48.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 20
+text = "Phase: PLAY_P1  Time: 90s"
+horizontal_alignment = 2
+
+[node name="RoundLabel" type="Label" parent="." unique_id=952380639]
+layout_mode = 1
+offset_left = 664.0
+offset_top = 48.0
+offset_right = 1024.0
+offset_bottom = 68.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 14
+text = "Round 1"
+horizontal_alignment = 2
+
+[node name="SurrenderBtn" type="Button" parent="." unique_id=1807173623]
+layout_mode = 1
+offset_left = 930.0
+offset_top = 550.0
+offset_right = 1010.0
+offset_bottom = 578.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 13
+text = "认输"
+
+[node name="PauseBtn" type="Button" parent="." unique_id=1054305244]
+layout_mode = 1
+offset_left = 930.0
+offset_top = 582.0
+offset_right = 1010.0
+offset_bottom = 610.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 13
+text = "暂停"
+
+[node name="P2BuffBar" type="GridContainer" parent="." unique_id=307032573]
+layout_mode = 1
+offset_left = 920.0
+offset_top = 10.0
+offset_right = 1020.0
+offset_bottom = 200.0
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="P1BuffBar" type="GridContainer" parent="." unique_id=1441105374]
+layout_mode = 1
+offset_left = 920.0
+offset_top = 640.0
+offset_right = 1020.0
+offset_bottom = 760.0
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 2
+
+[node name="ToastContainer" type="VBoxContainer" parent="." unique_id=2087755342]
+layout_mode = 1
+offset_left = 312.0
+offset_top = 80.0
+offset_right = 712.0
+offset_bottom = 200.0
+theme_override_constants/separation = 8
+
+[node name="GameOverlay" type="ColorRect" parent="." unique_id=785675271]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.71)
+
+[node name="GameOverTitle" type="Label" parent="GameOverlay" unique_id=1972351835]
+layout_mode = 1
+offset_left = 212.0
+offset_top = 200.0
+offset_right = 812.0
+offset_bottom = 280.0
+theme_override_fonts/font = ExtResource("3")
+horizontal_alignment = 1
+
+[node name="GameOverSub" type="Label" parent="GameOverlay" unique_id=237182132]
+layout_mode = 1
+offset_left = 312.0
+offset_top = 300.0
+offset_right = 712.0
+offset_bottom = 330.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 1
+
+[node name="GameOverBtn" type="Button" parent="GameOverlay" unique_id=479688464]
+layout_mode = 1
+offset_left = 412.0
+offset_top = 380.0
+offset_right = 612.0
+offset_bottom = 430.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 22
+text = "返回主菜单"
+
+[node name="PauseOverlay" type="ColorRect" parent="." unique_id=248295934]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.71)
+
+[node name="PauseTitle" type="Label" parent="PauseOverlay" unique_id=1440402616]
+layout_mode = 1
+offset_left = 312.0
+offset_top = 250.0
+offset_right = 712.0
+offset_bottom = 310.0
+theme_override_fonts/font = ExtResource("3")
+text = "暂停"
+horizontal_alignment = 1
+
+[node name="ResumeBtn" type="Button" parent="PauseOverlay" unique_id=254464500]
+layout_mode = 1
+offset_left = 412.0
+offset_top = 350.0
+offset_right = 612.0
+offset_bottom = 400.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 22
+text = "继续游戏"
+
+[node name="BackMenuBtn" type="Button" parent="PauseOverlay" unique_id=857895535]
+layout_mode = 1
+offset_left = 412.0
+offset_top = 420.0
+offset_right = 612.0
+offset_bottom = 470.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 22
+text = "返回主菜单"
+
+[node name="TooltipPanel" type="Panel" parent="." unique_id=42045661]
+visible = false
+layout_mode = 1
+offset_left = 100.0
+offset_top = 100.0
+offset_right = 300.0
+offset_bottom = 250.0
+
+[node name="TooltipName" type="Label" parent="TooltipPanel" unique_id=145820625]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 8.0
+offset_right = 190.0
+offset_bottom = 32.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 20
+
+[node name="TooltipMeta" type="Label" parent="TooltipPanel" unique_id=510003940]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 34.0
+offset_right = 190.0
+offset_bottom = 54.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 14
+
+[node name="TooltipDesc" type="RichTextLabel" parent="TooltipPanel" unique_id=1405137577]
+layout_mode = 1
+offset_left = 10.0
+offset_top = 58.0
+offset_right = 190.0
+offset_bottom = 140.0
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1253029660]
