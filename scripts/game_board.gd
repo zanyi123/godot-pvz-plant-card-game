@@ -89,6 +89,12 @@ var history: Array = []
 var effect_system: Node
 var game_state: Dictionary = {}
 
+# AI系统
+var ai_system: AISystem = null
+var ai_difficulty: int = 1  # 0=普通, 1=大师，默认大师
+var _p2_main_faction: String = ""
+var _p2_opp_played_count: int = 0
+
 # -- 动画/特效 --
 var hover_particles: Node2D      # 悬停粒子
 var deal_anim: Node               # 发牌动画
@@ -181,6 +187,15 @@ func _ready() -> void:
 	effect_system = Node.new()
 	effect_system.set_script(load("res://scripts/effect_system.gd"))
 	add_child(effect_system)
+
+	# 从全局配置读取AI难度
+	var gc: Node = get_node_or_null("/root/GameConfig")
+	if gc:
+		ai_difficulty = gc.get_ai_difficulty()
+
+	# 初始化AI系统（RefCounted，不需要add_child）
+	ai_system = AISystem.new()
+	ai_system.set_level(ai_difficulty)
 	
 	# 悬停粒子系统
 	hover_particles = Node2D.new()
@@ -706,7 +721,9 @@ func _host_p2_remedy(card_id: int) -> void:
 		_show_toast("⚠️ 您也濒死了！请打出治疗卡自救！")
 		_change_phase("REMEDY")
 		return
-	_change_phase("ROUND_END")
+	# 补救成功后检查无牌可出
+	if not _check_no_cards():
+		_change_phase("ROUND_END")
 
 
 # -- 联机 Client 模式 --------------------------------------------─
@@ -786,7 +803,7 @@ func _start_game_online_client() -> void:
 	_online_label.add_theme_font_override("font", load("res://assets/fonts/simhei.ttf"))
 	_online_label.add_theme_font_size_override("font_size", 14)
 	_online_label.add_theme_color_override("font_color", Color(100.0/255, 200.0/255, 1.0))
-	_online_label.text = "🌐 联机对战 - 你是 P2（Client）"
+	_online_label.text = "🌐 联机对战"
 	add_child(_online_label)
 	
 	# 设置 phase
@@ -983,7 +1000,7 @@ func _start_game() -> void:
 	
 	_change_phase("PLAY_P1" if first_player == "P1" else "PLAY_P2")
 	var online_tag = "🌐 联机" if is_online else ""
-	_show_toast("%s⚔️ 战斗开始！%s先手 — 六阶段结算引擎已加载" % [online_tag, "玩家" if first_player == "P1" else "AI" if not is_online else "对手"])
+	_show_toast("%s⚔️ 战斗开始！%s先手" % [online_tag, "玩家" if first_player == "P1" else "AI" if not is_online else "对手"])
 	
 	# 联机 Host：发送初始状态
 	if is_online and network_role == "host":
@@ -994,7 +1011,7 @@ func _start_game() -> void:
 		_online_label.add_theme_font_override("font", load("res://assets/fonts/simhei.ttf"))
 		_online_label.add_theme_font_size_override("font_size", 14)
 		_online_label.add_theme_color_override("font_color", Color(100.0/255, 200.0/255, 1.0))
-		_online_label.text = "🌐 联机对战 - 你是 P1（Host）"
+		_online_label.text = "🌐 联机对战"
 		add_child(_online_label)
 	
 	# 启动发牌动画
@@ -1145,9 +1162,9 @@ func _on_draw_anim_finished() -> void:
 	_refresh_deck()  # 更新牌库视觉
 	_advance_to_play_phase()
 
-## 根据 first_player 推进到出牌阶段
-func _advance_to_play_phase() -> void:
-	# 任一方无牌可出（手牌+牌库都空）→ 按血量判定胜负
+## 统一检查：任一方手牌+牌库都空 → 按血量判定胜负
+## 在所有关键流程点调用，确保无遗漏
+func _check_no_cards() -> bool:
 	var p1_no_cards: bool = p1_hand.is_empty() and deck_cards.is_empty()
 	var p2_no_cards: bool = p2_hand.is_empty() and deck_cards.is_empty()
 	if p1_no_cards or p2_no_cards:
@@ -1158,6 +1175,12 @@ func _advance_to_play_phase() -> void:
 		else:
 			winner = "DRAW"
 		_change_phase("GAME_OVER")
+		return true
+	return false
+
+## 根据 first_player 推进到出牌阶段
+func _advance_to_play_phase() -> void:
+	if _check_no_cards():
 		return
 	_refresh_all_ui()
 	if first_player == "P1":
@@ -1669,7 +1692,9 @@ func _apply_remedy(card: CardData) -> void:
 		_change_phase("REMEDY_AI")
 		return
 	game_state.erase("remedy")
-	_change_phase("ROUND_END")
+	# 补救成功后检查无牌可出
+	if not _check_no_cards():
+		_change_phase("ROUND_END")
 
 ## 获取补救卡的回血量（触发技能效果）
 func _get_remedy_heal_value(card: CardData) -> int:
@@ -1764,7 +1789,9 @@ func _ai_remedy() -> void:
 		_show_toast("⚠️ 您也濒死了！请打出治疗卡自救！")
 		_change_phase("REMEDY")
 		return
-	_change_phase("ROUND_END")
+	# 补救成功后检查无牌可出
+	if not _check_no_cards():
+		_change_phase("ROUND_END")
 
 ## AI 补救评分（选最佳补救卡）
 func _ai_remedy_score(card: CardData, remedy_info: Dictionary) -> int:
@@ -1879,25 +1906,49 @@ func _ai_play() -> void:
 		_advance_after_ai()
 		return
 
-	# 简单AI：出一张精力够用且攻击力最大的牌
-	var playable: Array[CardData] = []
-	for card in p2_hand:
-		if int(card.cost) <= current_mana:
-			playable.append(card)
-	
-	if playable.is_empty():
+	# 获取P1(对手)主卡信息（AI可见的公开信息）
+	var p1_main_info: Dictionary = _get_opponent_main_info()
+	var p1_main_faction: String = p1_main_info.get("faction", "")
+	var p1_main_atk: int = p1_main_info.get("atk", 0)
+	var p1_played_count: int = 0
+	if game_state.has("played_cards") and game_state["played_cards"].has("P1"):
+		p1_played_count = game_state["played_cards"]["P1"].size()
+
+	# 使用AI系统决策（大师AI或普通AI）
+	var chosen_combo: Array = []
+	var prev_level: int = ai_system.ai_level
+	if ai_difficulty == AISystem.AILevel.MASTER:
+		ai_system.set_level(AISystem.AILevel.MASTER)
+	else:
+		ai_system.set_level(AISystem.AILevel.NORMAL)
+
+	chosen_combo = ai_system.ai_play(
+		p2_hand, current_mana,
+		p2_hp, p2_max_hp,
+		p1_hp, p1_max_hp,
+		p1_main_faction, p1_main_atk,
+		round_count, p1_played_count
+	)
+	ai_system.set_level(prev_level)
+
+	if chosen_combo.is_empty():
 		p2_played.clear()
-		# AI 无牌可出（精力不够出任何牌）→ 跳过
 		_show_toast("AI 精力不足，跳过出牌")
 		_advance_after_ai()
 		return
-	
-	# 按攻击力排序，出最大的
-	playable.sort_custom(func(a, b): return a.atk > b.atk)
-	var chosen = playable[0]
-	current_mana -= int(chosen.cost)
-	p2_hand.erase(chosen)
-	p2_played = [chosen]
+
+	# 执行AI选择的卡牌组合
+	p2_played.clear()
+	for card in chosen_combo:
+		if card is CardData and card in p2_hand:
+			current_mana -= int(card.cost)
+			p2_hand.erase(card)
+			p2_played.append(card)
+
+	# AI记录对方出牌数（用于保龄泡泡等倍率计算）
+	if ai_system:
+		ai_system.record_opponent_play(chosen_combo)
+
 	# 同步游戏状态
 	game_state["hands"] = {"P1": p1_hand, "P2": p2_hand}
 	if not game_state["players"]["P2"].has("buffs"):
@@ -1908,7 +1959,8 @@ func _ai_play() -> void:
 	game_state["players"]["P2"]["max_hp"] = p2_max_hp
 	game_state["players"]["P1"]["hp"] = p1_hp
 	game_state["players"]["P1"]["max_hp"] = p1_max_hp
-	# 触发 P2 主卡即时效果（对齐 Python commit_pending_play）
+
+	# 触发 P2 主卡即时效果
 	var commit_logs: Array = effect_system.commit_effects(game_state, "P2", p2_played)
 	if commit_logs.size() > 0:
 		_broadcast_logs(commit_logs)
@@ -1916,8 +1968,41 @@ func _ai_play() -> void:
 		p2_hp = int(game_state["players"]["P2"].get("hp", p2_hp))
 		p1_hand = game_state["hands"].get("P1", p1_hand)
 		p2_hand = game_state["hands"].get("P2", p2_hand)
-		_refresh_all_ui()
+	_refresh_all_ui()
 	_advance_after_ai()
+
+func _get_opponent_main_info() -> Dictionary:
+	"""获取对方(P1)主卡信息(阵营+atk)，用于AI策略决策"""
+	var info: Dictionary = {"faction": "", "atk": 0}
+	var main_factions: Dictionary = {"法": true, "射": true, "坦": true}
+	if game_state.has("played_cards") and game_state["played_cards"].has("P1"):
+		var p1_played: Array = game_state["played_cards"]["P1"]
+		# 优先选择 faction 为 法/射/坦 的牌
+		for card in p1_played:
+			if card is CardData and main_factions.has(card.faction):
+				info["faction"] = card.faction
+				info["atk"] = card.atk
+				return info
+		# 兜底：返回第一张 type == "主" 的牌
+		for card in p1_played:
+			if card is CardData and card.type == "主":
+				info["faction"] = card.faction
+				info["atk"] = card.atk
+				return info
+	if p1_pending.size() > 0:
+		# 优先选择 faction 为 法/射/坦 的牌
+		for card in p1_pending:
+			if card is CardData and main_factions.has(card.faction):
+				info["faction"] = card.faction
+				info["atk"] = card.atk
+				return info
+		# 兜底：返回第一张 type == "主" 的牌
+		for card in p1_pending:
+			if card is CardData and card.type == "主":
+				info["faction"] = card.faction
+				info["atk"] = card.atk
+				return info
+	return info
 
 
 func _advance_after_ai() -> void:
@@ -1977,6 +2062,10 @@ func _resolve() -> void:
 	_broadcast_logs(logs)
 	
 	_refresh_all_ui()
+	
+	# -- 无牌可出检查：结算后立即检查，避免跳过 --
+	if _check_no_cards():
+		return
 	
 	# -- 补救回合检测（对齐 Python state_machine）--------------─
 	# 双方同时濒死时：P2 先补救 → P1 再补救 → 都救活才继续
@@ -2234,8 +2323,13 @@ func _refresh_p2_slot() -> void:
 		p2_slot_container.add_child(btn)
 
 func _refresh_hp() -> void:
+	var gc: Node = get_node_or_null("/root/GameConfig")
+	var is_pve: bool = gc != null and gc.battle_mode == "pve"
+	var ai_label: String = ""
+	if is_pve:
+		ai_label = " [AI: %s]" % ("普通" if ai_difficulty == 0 else "大师")
+
 	if is_online and network_role == "client":
-		# Client: 底部p1_hp_bar显示自己(P2)，顶部p2_hp_bar显示对手(P1)
 		_refresh_hp_bar(p1_hp_bar, p2_max_hp, max(0, p2_hp))
 		_refresh_hp_bar(p2_hp_bar, p1_max_hp, max(0, p1_hp))
 		p1_hp_label.text = "你(P2) HP: %d/%d  Mana: %d/%d" % [max(0, p2_hp), p2_max_hp, current_mana, max_mana]
@@ -2244,7 +2338,7 @@ func _refresh_hp() -> void:
 		_refresh_hp_bar(p1_hp_bar, p1_max_hp, max(0, p1_hp))
 		_refresh_hp_bar(p2_hp_bar, p2_max_hp, max(0, p2_hp))
 		p1_hp_label.text = "P1 HP: %d/%d  Mana: %d/%d" % [max(0, p1_hp), p1_max_hp, current_mana, max_mana]
-		p2_hp_label.text = "P2 HP: %d/%d" % [max(0, p2_hp), p2_max_hp]
+		p2_hp_label.text = "P2%s HP: %d/%d" % [ai_label, max(0, p2_hp), p2_max_hp]
 	# buff 和精力也要根据视角翻转
 	if is_online and network_role == "client":
 		_refresh_buff_bar($P1BuffBar, game_state.get("players", {}).get("P2", {}))
@@ -2473,7 +2567,8 @@ func _update_deck_tooltip_position() -> void:
 	_deck_tooltip.text = "剩余 %d 张" % deck_cards.size()
 
 func _refresh_round() -> void:
-	round_label.text = "Round %d" % round_count
+	var diff_text: String = "普通" if ai_difficulty == 0 else "大师"
+	round_label.text = "Round %d  |  AI难度: %s" % [round_count, diff_text]
 
 func _refresh_history() -> void:
 	for child in history_area.get_children():
@@ -2512,7 +2607,17 @@ func _refresh_history() -> void:
 		history_area.add_child(vbox)
 
 func _update_timer_ui() -> void:
-	timer_label.text = "Phase: %s  Time: %ds" % [phase, int(time_left)]
+	var phase_map := {
+		"PLAY_P1": "你的回合",
+		"PLAY_P2": "对手回合",
+		"RESOLVE": "结算中",
+		"ROUND_END": "回合结束",
+		"REMEDY": "濒死补救",
+		"REMEDY_AI": "对手补救",
+		"GAME_OVER": "游戏结束",
+	}
+	var phase_cn: String = phase_map.get(phase, phase)
+	timer_label.text = "%s  剩余 %ds" % [phase_cn, int(time_left)]
 
 # -- 卡牌 UI 创建 --------------------------------------------─
 
@@ -2937,7 +3042,8 @@ func _play_sfx() -> void:
 
 ## 显示卡牌详细信息（手机长按/PC 悬停）
 func _show_card_info(card: CardData) -> void:
-	print("[CardInfo] 卡牌: %s (%s)" % [card.card_name, card.faction])
-	print("[CardInfo] 生命: %d  攻击: %d" % [card.hp, card.attack])
-	if card.description != "":
-		print("[CardInfo] 描述: %s" % card.description)
+	if OS.has_feature("debug"):
+		print("[CardInfo] 卡牌: %s (%s)" % [card.card_name, card.faction])
+		print("[CardInfo] 生命: %d  攻击: %d" % [card.hp, card.attack])
+		if card.description != "":
+			print("[CardInfo] 描述: %s" % card.description)

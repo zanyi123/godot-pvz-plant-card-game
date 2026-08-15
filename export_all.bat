@@ -5,8 +5,8 @@ echo   PVZ卡牌游戏 - 一键双平台导出
 echo ============================================
 echo.
 
-set GODOT="E:\cursor储存\pvz-godot\tools\Godot_v4.6.2-stable_win64.exe"
-set PROJECT="E:\cursor储存\pvz-godot\pvz-plant-card-game"
+set GODOT="E:\项目储存\pvz-project\tools\Godot_v4.6.2-stable_win64.exe"
+set PROJECT="E:\项目储存\pvz-project\pvz-godot\pvz-plant-card-game"
 set RELEASE_DIR="%PROJECT%\PVZ卡牌游戏_发布版"
 
 echo [1/3] 导出 Windows 版本...

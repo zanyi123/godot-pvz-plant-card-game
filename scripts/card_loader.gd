@@ -43,5 +43,6 @@ func load_cards() -> Array[CardData]:
 		full_deck.append(CardData.new(entry))
 
 	_loaded = true
-	print("[CardLoader] 成功加载 %d 张卡牌" % full_deck.size())
+	if OS.has_feature("debug"):
+		print("[CardLoader] 成功加载 %d 张卡牌" % full_deck.size())
 	return full_deck

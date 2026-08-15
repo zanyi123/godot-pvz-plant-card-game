@@ -23,10 +23,12 @@ func start_server(base_port: int = NetProtocol.LAN_PORT) -> bool:
 		if err == OK:
 			_listen_port = port
 			_running = true
-			print("[GameHost] 监听启动: 端口 %d" % port)
+			if OS.has_feature("debug"):
+				print("[GameHost] 监听启动: 端口 %d" % port)
 			return true
 		_server = null
-	print("[GameHost] 所有端口绑定失败")
+	if OS.has_feature("debug"):
+		print("[GameHost] 所有端口绑定失败")
 	return false
 
 ## 获取监听端口
@@ -44,7 +46,8 @@ func _process(_delta: float) -> void:
 			_peer = _server.take_connection()
 			_client_connected = true
 			client_connected.emit()
-			print("[GameHost] Client 已连接")
+			if OS.has_feature("debug"):
+				print("[GameHost] Client 已连接")
 		else:
 			# 已有连接，拒绝新的
 			var rejected = _server.take_connection()
@@ -105,7 +108,8 @@ func send_state(state: Dictionary) -> void:
 	var msg = NetProtocol.make_message("GAME_STATE", state)
 	var err = _peer.put_data(msg.to_utf8_buffer())
 	if err != OK:
-		print("[GameHost] 发送状态失败: %d" % err)
+		if OS.has_feature("debug"):
+			print("[GameHost] 发送状态失败: %d" % err)
 
 ## Client 是否已连接
 func is_client_connected() -> bool:

@@ -5,7 +5,7 @@ extends Node
 
 ## ======== 在这里修改版本号 ========
 const VERSION_MAJOR: int = 1
-const VERSION_MINOR: int = 0
+const VERSION_MINOR: int = 3
 const VERSION_PATCH: int = 0
 const VERSION_SUFFIX: String = ""  # 如 "beta", "rc1", "" 表示正式版
 ## ==================================
@@ -25,4 +25,5 @@ static func get_display_text() -> String:
 	return "v" + get_version_string()
 
 func _ready() -> void:
-	print("[VersionManager] 当前版本: %s (code: %d)" % [get_version_string(), get_version_code()])
+	if OS.has_feature("debug"):
+		print("[VersionManager] 当前版本: %s (code: %d)" % [get_version_string(), get_version_code()])

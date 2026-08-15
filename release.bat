@@ -6,7 +6,7 @@ echo ============================================
 echo.
 
 set PROJECT_DIR=%~dp0
-set GODOT="E:\cursor储存\pvz-godot\tools\Godot_v4.6.2-stable_win64.exe"
+set GODOT="E:\项目储存\pvz-project\tools\Godot_v4.6.2-stable_win64.exe"
 set PROJECT="%PROJECT_DIR%."
 set RELEASE_DIR="%PROJECT_DIR%PVZ卡牌游戏_发布版"
 

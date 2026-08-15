@@ -150,6 +150,35 @@
 
 ---
 
+### 2026-08-15 - v1.1.0 - 清理调试信息弹幕 + 中文本地化 + 代码规范
+**描述：**
+1. 正式打包版游戏中仍显示调试信息弹幕（如 `[DEBUG] cost=2 mana=5`）
+2. 阶段显示为技术术语（如 `Phase: PLAY_P1`）而非中文描述
+3. 联机状态显示技术角色信息（如 "P1（Host）"）
+4. print() 语句在正式版中仍输出到控制台
+
+**原因：**
+1. 旧版 APK 包含已删除的调试代码
+2. TimerLabel 使用英文 phase 常量而非中文映射
+3. 联机标签直接显示角色技术信息
+4. print() 语句未加条件编译，debug/release 版本都输出
+
+**修复：**
+1. [export_presets.cfg](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/export_presets.cfg#L29): `debug/export_console_wrapper=1` → `0`，移除 Windows 控制台窗口
+2. [game_board.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/game_board.gd): 清理技术化 Toast 消息，添加中文 phase 映射（你的回合/对手回合等），清理联机标签
+3. [main.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/main.gd): print() 添加 `if OS.has_feature("debug")` 条件编译
+4. [version_manager.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/version_manager.gd): print() 条件编译
+5. [card_loader.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/card_loader.gd): print() 条件编译
+6. [global_net.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/global_net.gd): print() 条件编译
+7. [player_profile.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/player_profile.gd): print() 条件编译
+8. [game_client_net.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/network/game_client_net.gd): print() 条件编译
+9. [game_host_net.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/network/game_host_net.gd): print() 条件编译
+10. 创建 `skills/` 目录，添加 skill1/skill2/skill3 工作规范文件
+
+**测试：** 重新打包 APK 后调试信息消失，phase 显示中文 ✅
+
+---
+
 ## 待修复列表
 
 （暂无）

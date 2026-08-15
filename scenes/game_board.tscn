@@ -28,6 +28,7 @@ stretch_mode = 1
 [node name="BgFillBottom" type="TextureRect" parent="." unique_id=600642819]
 layout_mode = 1
 anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_top = 363.0
@@ -144,10 +145,10 @@ offset_bottom = 490.0
 
 [node name="DeckLabel" type="Label" parent="DeckZone" unique_id=1540572130]
 layout_mode = 1
-offset_left = 14.0
-offset_top = 20.0
-offset_right = 106.0
-offset_bottom = 84.0
+offset_left = 9.0
+offset_top = 12.0
+offset_right = 101.0
+offset_bottom = 76.0
 theme_override_fonts/font = ExtResource("3")
 theme_override_font_sizes/font_size = 18
 text = "Deck 44"

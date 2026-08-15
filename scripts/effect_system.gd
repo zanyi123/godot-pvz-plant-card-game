@@ -225,12 +225,25 @@ func _log(logs: Array, player: String, action: String, value: int, reason: Strin
 
 func _get_main_faction(state: Dictionary, player_key: String) -> String:
 	var played: Array = state.get("played_cards", {}).get(player_key, [])
+	var main_factions: Dictionary = {"法": true, "射": true, "坦": true}
+	# 优先选择 faction 为 法/射/坦 的牌
+	for c in played:
+		if c is CardData and main_factions.has(c.faction):
+			return c.faction
+	# 兜底：返回第一张 type == "主" 的牌
 	for c in played:
 		if c is CardData and c.type == "主":
 			return c.faction
 	return ""
 
 func _get_main_card(cards: Array) -> CardData:
+	## 优先选择 faction 为 法/射/坦 的牌作为主卡
+	## 辅助卡(faction="辅") 的 type 也是 "主"，但不应作为主卡
+	var main_factions: Dictionary = {"法": true, "射": true, "坦": true}
+	for c in cards:
+		if c is CardData and main_factions.has(c.faction):
+			return c
+	# 兜底：如果没有法/射/坦，返回第一张 type == "主" 的牌
 	for c in cards:
 		if c is CardData and c.type == "主":
 			return c
@@ -452,7 +465,7 @@ func _exec_counter_atk_zero(state: Dictionary, pk: String, card: CardData, _sd: 
 		_log(logs, opp, "counter_atk_zero", 1, "法师攻击清0")
 
 func _exec_counter_dmg_x3(state: Dictionary, pk: String, card: CardData, sd: Dictionary, logs: Array) -> void:
-	## 西瓜投手(ID:33) 射手 → 攻击坦克时伤害×3
+	## 西瓜投手(ID:33) 射手 → 攻击坦克时自身伤害×3
 	if card.id != 33:
 		return
 	var mult: int = int(sd.get("value", 3))
@@ -460,13 +473,14 @@ func _exec_counter_dmg_x3(state: Dictionary, pk: String, card: CardData, sd: Dic
 	var opp_faction: String = _get_main_faction(state, opp)
 	if opp_faction == "坦":
 		var temp: Dictionary = _get_temp(state)
-		var cur: float = float(temp.get(pk + "_dmg_multiplier", 1.0))
-		temp[pk + "_dmg_multiplier"] = cur * mult
+		var card_mult: Dictionary = temp.get(pk + "_card_multipliers", {})
+		card_mult[card.id] = float(card_mult.get(card.id, 1.0)) * mult
+		temp[pk + "_card_multipliers"] = card_mult
 		temp[pk + "_countering"] = true
-		_log(logs, pk, "counter_dmg_x3", mult, "克制坦克×3")
+		_log(logs, pk, "counter_dmg_x3", mult, "克制坦克自身伤害×3")
 
 func _exec_dmg_buff_2x(state: Dictionary, pk: String, card: CardData, sd: Dictionary, logs: Array) -> void:
-	## 毁灭菇(ID:34) 法师 → 对方不是坦克时伤害×2
+	## 毁灭菇(ID:34) 法师 → 对方不是坦克时自身伤害×2
 	if card.id != 34:
 		return
 	var opp: String = _opp(pk)
@@ -474,12 +488,13 @@ func _exec_dmg_buff_2x(state: Dictionary, pk: String, card: CardData, sd: Dictio
 	if opp_faction != "坦":
 		var mult: int = int(sd.get("value", 2))
 		var temp: Dictionary = _get_temp(state)
-		var cur: float = float(temp.get(pk + "_dmg_multiplier", 1.0))
-		temp[pk + "_dmg_multiplier"] = cur * mult
-		_log(logs, pk, "dmg_buff_2x", mult, "非坦克伤害×2")
+		var card_mult: Dictionary = temp.get(pk + "_card_multipliers", {})
+		card_mult[card.id] = float(card_mult.get(card.id, 1.0)) * mult
+		temp[pk + "_card_multipliers"] = card_mult
+		_log(logs, pk, "dmg_buff_2x", mult, "非坦克自身伤害×2")
 
 func _exec_dmg_buff_2x_counter(state: Dictionary, pk: String, card: CardData, sd: Dictionary, logs: Array) -> void:
-	## 橡木弓手(ID:68) 射手 → 克制坦克阵营伤害×2
+	## 橡木弓手(ID:68) 射手 → 克制坦克阵营时自身伤害×2
 	if card.faction != "射":
 		return
 	var opp: String = _opp(pk)
@@ -487,17 +502,18 @@ func _exec_dmg_buff_2x_counter(state: Dictionary, pk: String, card: CardData, sd
 	if opp_faction == "坦":
 		var mult: int = int(sd.get("value", 2))
 		var temp: Dictionary = _get_temp(state)
-		var cur: float = float(temp.get(pk + "_dmg_multiplier", 1.0))
-		temp[pk + "_dmg_multiplier"] = cur * mult
+		var card_mult: Dictionary = temp.get(pk + "_card_multipliers", {})
+		card_mult[card.id] = float(card_mult.get(card.id, 1.0)) * mult
+		temp[pk + "_card_multipliers"] = card_mult
 		temp[pk + "_countering"] = true
-		_log(logs, pk, "dmg_buff_2x_counter", mult, "克制坦克×2")
+		_log(logs, pk, "dmg_buff_2x_counter", mult, "克制坦克自身伤害×2")
 
 # --------------------------------------------------------------─
 # §11 阶段4 handler：增伤
 # --------------------------------------------------------------─
 
 func _exec_support_dmg_mult(state: Dictionary, pk: String, card: CardData, sd: Dictionary, logs: Array) -> void:
-	## 莲小蓬(ID:30)：同出有辅助卡时伤害×3
+	## 莲小蓬(ID:30)：同出有辅助卡时，仅自身atk×3
 	var mult: int = int(sd.get("value", 3))
 	var played: Array = state.get("played_cards", {}).get(pk, [])
 	var has_support: bool = false
@@ -507,9 +523,10 @@ func _exec_support_dmg_mult(state: Dictionary, pk: String, card: CardData, sd: D
 			break
 	if has_support:
 		var temp: Dictionary = _get_temp(state)
-		var cur: float = float(temp.get(pk + "_dmg_multiplier", 1.0))
-		temp[pk + "_dmg_multiplier"] = cur * mult
-		_log(logs, pk, "support_dmg_mult", mult, card.name)
+		var card_mult: Dictionary = temp.get(pk + "_card_multipliers", {})
+		card_mult[card.id] = float(card_mult.get(card.id, 1.0)) * mult
+		temp[pk + "_card_multipliers"] = card_mult
+		_log(logs, pk, "support_dmg_mult", mult, card.name + "自身伤害×3")
 
 # --------------------------------------------------------------─
 # §12 阶段5 handler：卡牌交互
@@ -617,13 +634,15 @@ func _exec_block_next_draw(state: Dictionary, pk: String, card: CardData, _sd: D
 	_log(logs, pk, "block_next_draw", 1, card.name)
 
 func _exec_multiply_dmg(state: Dictionary, pk: String, card: CardData, _sd: Dictionary, logs: Array) -> void:
+	## 保龄泡泡(ID:71)：自身伤害×对方出牌数
 	var opp: String = _opp(pk)
 	var opp_count: int = state.get("played_cards", {}).get(opp, []).size()
 	if opp_count > 0:
 		var temp: Dictionary = _get_temp(state)
-		var cur: float = float(temp.get(pk + "_dmg_multiplier", 1.0))
-		temp[pk + "_dmg_multiplier"] = cur * opp_count
-		_log(logs, pk, "multiply_dmg", opp_count, card.name)
+		var card_mult: Dictionary = temp.get(pk + "_card_multipliers", {})
+		card_mult[card.id] = float(card_mult.get(card.id, 1.0)) * opp_count
+		temp[pk + "_card_multipliers"] = card_mult
+		_log(logs, pk, "multiply_dmg", opp_count, card.name + "自身伤害×" + str(opp_count))
 
 # --------------------------------------------------------------─
 # §13 阶段6 handler：控制 & 防御
@@ -693,9 +712,9 @@ func resolve_clash(state: Dictionary, p1_cards: Array, p2_cards: Array) -> Array
 	var p2_main: CardData = _get_main_card(p2_cards)
 	var temp: Dictionary = _get_temp(state)
 
-	# 计算双方原始伤害
-	var p2_damage: int = _calc_raw_damage(state, "P1", p1_main, p2_main, temp)
-	var p1_damage: int = _calc_raw_damage(state, "P2", p2_main, p1_main, temp)
+	# 计算双方原始伤害（使用所有出牌的总攻击力）
+	var p2_damage: int = _calc_raw_damage(state, "P1", p1_cards, p1_main, p2_cards, p2_main, temp)
+	var p1_damage: int = _calc_raw_damage(state, "P2", p2_cards, p2_main, p1_cards, p1_main, temp)
 
 	# -- 防御处理（减伤 → 护盾/破甲 → block_turn）------------─
 	p1_damage = _apply_defense(state, "P1", p1_damage, temp.get("P2_armor_pierce", false), logs)
@@ -732,7 +751,7 @@ func resolve_clash(state: Dictionary, p1_cards: Array, p2_cards: Array) -> Array
 ##   A克制B + A_base ≤ B_raw → 双方0（被克制方无法造成伤害）
 ##   无克制 → 全额互伤
 
-func _calc_raw_damage(state: Dictionary, attacker: String, my_main: CardData, opp_main: CardData, temp: Dictionary) -> int:
+func _calc_raw_damage(state: Dictionary, attacker: String, my_cards: Array, my_main: CardData, opp_cards: Array, opp_main: CardData, temp: Dictionary) -> int:
 	## 攻击方 = attacker 对对手造成的伤害
 	if my_main == null:
 		return 0
@@ -741,36 +760,56 @@ func _calc_raw_damage(state: Dictionary, attacker: String, my_main: CardData, op
 	if temp.get(attacker + "_atk_disabled", false) or temp.get(attacker + "_main_atk_zero", false):
 		return 0
 
-	# 基础攻击力
-	var atk: int = my_main.atk + int(temp.get(attacker + "_atk_boost", 0))
+	# -- 第一步：主卡对主卡的克制判定 --
+	var my_main_atk: int = my_main.atk
+	var opp_main_atk: int = opp_main.atk if opp_main else 0
 
-	# 弱化
+	# 弱化处理（影响主卡攻击力）
 	if temp.get(attacker + "_weakened", false):
-		atk = mini(atk, 1)
-	atk = maxi(0, atk)
+		my_main_atk = mini(my_main_atk, 1)
+	if temp.get(_opp(attacker) + "_weakened", false):
+		opp_main_atk = mini(opp_main_atk, 1)
 
-	# 乘算
-	var mult: float = float(temp.get(attacker + "_dmg_multiplier", 1.0))
-	var base_dmg: int = int(atk * mult)
-
-	# 阵营判定
+	# 阵营判定（基于主卡）
 	var my_faction: String = my_main.faction
 	var opp_faction: String = opp_main.faction if opp_main else ""
 	var i_counter_opp: bool = FACTION_COUNTER.get(my_faction, "") == opp_faction
 	var opp_counters_me: bool = FACTION_COUNTER.get(opp_faction, "") == my_faction
 
+	var main_damage: int = 0
 	if i_counter_opp:
-		# 我克制对手：溢出伤害 = base_dmg - 对手原始atk
-		var opp_raw_atk: int = opp_main.atk if opp_main else 0
-		if temp.get(_opp(attacker) + "_weakened", false):
-			opp_raw_atk = mini(opp_raw_atk, 1)
-		return maxi(0, base_dmg - opp_raw_atk)
+		# 我克制对手：主卡伤害 = max(0, my_main_atk - opp_main_atk)
+		main_damage = maxi(0, my_main_atk - opp_main_atk)
 	elif opp_counters_me:
-		# 对手克制我：我攻击清零
-		return 0
+		# 对手克制我：主卡伤害为0
+		main_damage = 0
 	else:
-		# 无克制：全额
-		return base_dmg
+		# 无克制：主卡全额伤害
+		main_damage = my_main_atk
+
+	# -- 第二步：最终总伤害 = 主卡溢出伤害(含自身倍率) + 辅卡自身atk(含自身倍率) + atk_boost --
+	var card_multipliers: Dictionary = temp.get(attacker + "_card_multipliers", {})
+	var total_damage: int = 0
+
+	# 主卡伤害：溢出值 × 主卡自身倍率
+	var main_mult: float = float(card_multipliers.get(my_main.id, 1.0))
+	total_damage += int(main_damage * main_mult)
+
+	# 辅卡伤害：每张辅卡独立计算 atk × 自身倍率
+	for c in my_cards:
+		if c is CardData and c != my_main:
+			var card_mult: float = float(card_multipliers.get(c.id, 1.0))
+			total_damage += int(c.atk * card_mult)
+
+	# atk_boost：flat buff，直接加算，不参与倍率
+	total_damage += int(temp.get(attacker + "_atk_boost", 0))
+
+	# 应用弱化（影响总伤害）
+	if temp.get(attacker + "_weakened", false):
+		total_damage = mini(total_damage, 1)
+	total_damage = maxi(0, total_damage)
+
+	return total_damage
 
 # --------------------------------------------------------------─
 # §16 防御处理：减伤 → 护盾/破甲 → block_turn

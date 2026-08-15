@@ -13,10 +13,11 @@ var _profile: Dictionary = {}
 
 func _ready() -> void:
 	_profile = load_profile()
-	if _profile.is_empty():
-		print("[PlayerProfile] 未检测到玩家档案")
-	else:
-		print("[PlayerProfile] 已加载: %s (%s)" % [get_player_name(), get_display_id()])
+	if OS.has_feature("debug"):
+		if _profile.is_empty():
+			print("[PlayerProfile] 未检测到玩家档案")
+		else:
+			print("[PlayerProfile] 已加载: %s (%s)" % [get_player_name(), get_display_id()])
 
 func load_profile() -> Dictionary:
 	if not FileAccess.file_exists(PROFILE_FILE):
@@ -47,7 +48,8 @@ func create_profile(player_name: String) -> Dictionary:
 		"player_name": player_name.strip_edges(),
 	}
 	save_profile(profile)
-	print("[PlayerProfile] 注册成功: %s (ID: %s)" % [player_name, get_display_id()])
+	if OS.has_feature("debug"):
+		print("[PlayerProfile] 注册成功: %s (ID: %s)" % [player_name, get_display_id()])
 	return profile
 
 func get_player_id() -> String:

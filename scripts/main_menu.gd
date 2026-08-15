@@ -137,10 +137,14 @@ func _hide_popup() -> void:
 
 # -- 确认出征对话框（对应 Python ConfirmDialog）--------------
 
+var _diff_normal_btn: CheckBox = null
+var _diff_master_btn: CheckBox = null
+var _selected_difficulty: int = 1  # 0=普通, 1=大师
+
 func _create_confirm_dialog() -> void:
 	# 尺寸参数
 	var dlg_w = 420
-	var dlg_h = 280
+	var dlg_h = 380
 	var dlg_x = (1024 - dlg_w) / 2
 	var dlg_y = (768 - dlg_h) / 2
 	
@@ -188,13 +192,57 @@ func _create_confirm_dialog() -> void:
 	# 提示文字
 	confirm_msg_label = Label.new()
 	confirm_msg_label.position = Vector2(0, 120)
-	confirm_msg_label.size = Vector2(dlg_w, 30)
+	confirm_msg_label.size = Vector2(dlg_w, 24)
 	confirm_msg_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	confirm_msg_label.add_theme_font_override("font", font)
-	confirm_msg_label.add_theme_font_size_override("font_size", 15)
+	confirm_msg_label.add_theme_font_size_override("font_size", 14)
 	confirm_msg_label.add_theme_color_override("font_color", Color(220.0/255, 235.0/255, 1.0))
 	confirm_msg_label.text = "与 AI 对战并获取胜利"
 	confirm_panel.add_child(confirm_msg_label)
+
+	# -- AI难度选择 --
+	var diff_title = Label.new()
+	diff_title.position = Vector2(0, 152)
+	diff_title.size = Vector2(dlg_w, 24)
+	diff_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	diff_title.add_theme_font_override("font", font)
+	diff_title.add_theme_font_size_override("font_size", 15)
+	diff_title.add_theme_color_override("font_color", Color(255.0/255, 220.0/255, 120.0/255))
+	diff_title.text = "— AI 难度选择 —"
+	confirm_panel.add_child(diff_title)
+
+	# 普通难度按钮
+	_diff_normal_btn = CheckBox.new()
+	_diff_normal_btn.position = Vector2(60, 185)
+	_diff_normal_btn.size = Vector2(130, 32)
+	_diff_normal_btn.add_theme_font_override("font", font)
+	_diff_normal_btn.add_theme_font_size_override("font_size", 16)
+	_diff_normal_btn.text = "😊 普通"
+	_diff_normal_btn.button_pressed = false
+	_diff_normal_btn.toggled.connect(_on_diff_normal_toggled)
+	confirm_panel.add_child(_diff_normal_btn)
+
+	# 大师难度按钮
+	_diff_master_btn = CheckBox.new()
+	_diff_master_btn.position = Vector2(dlg_w - 60 - 130, 185)
+	_diff_master_btn.size = Vector2(130, 32)
+	_diff_master_btn.add_theme_font_override("font", font)
+	_diff_master_btn.add_theme_font_size_override("font_size", 16)
+	_diff_master_btn.text = "😈 大师"
+	_diff_master_btn.button_pressed = true
+	_diff_master_btn.toggled.connect(_on_diff_master_toggled)
+	confirm_panel.add_child(_diff_master_btn)
+
+	# 难度说明
+	var diff_desc = Label.new()
+	diff_desc.position = Vector2(30, 222)
+	diff_desc.size = Vector2(dlg_w - 60, 40)
+	diff_desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	diff_desc.add_theme_font_override("font", font)
+	diff_desc.add_theme_font_size_override("font_size", 12)
+	diff_desc.add_theme_color_override("font_color", Color(200.0/255, 220.0/255, 255.0/255))
+	diff_desc.text = "普通：基础AI · 大师：组合策略+三回合预测"
+	confirm_panel.add_child(diff_desc)
 	
 	# 按钮区域
 	var btn_w = 140
@@ -202,7 +250,7 @@ func _create_confirm_dialog() -> void:
 	var btn_spacing = 30
 	var total_btn_w = 2 * btn_w + btn_spacing
 	var btn_start_x = (dlg_w - total_btn_w) / 2
-	var btn_y = dlg_h - btn_h - 30
+	var btn_y = dlg_h - btn_h - 20
 	
 	# 确认按钮（绿色）
 	confirm_btn = Button.new()
@@ -233,6 +281,10 @@ func _create_confirm_dialog() -> void:
 func _show_confirm_dialog(world_name: String) -> void:
 	_confirm_world = world_name
 	confirm_world_label.text = "🌍 " + world_name
+	var gc: Node = get_node_or_null("/root/GameConfig")
+	_selected_difficulty = gc.get_ai_difficulty() if gc else 1
+	_diff_normal_btn.button_pressed = (_selected_difficulty == 0)
+	_diff_master_btn.button_pressed = (_selected_difficulty == 1)
 	confirm_overlay.visible = true
 	_confirm_visible = true
 
@@ -243,12 +295,32 @@ func _hide_confirm_dialog() -> void:
 
 
 func _on_confirm出征() -> void:
-	"""确认出征 → 预备曲继续播放，携带世界名进入战斗场景。"""
+	"""确认出征 → 保存AI难度，切换到战斗场景。"""
 	_play_click_sfx()
 	_hide_confirm_dialog()
+	var gc: Node = get_node_or_null("/root/GameConfig")
+	if gc:
+		gc.set_ai_difficulty(_selected_difficulty)
+		gc.set_battle_mode("pve")
 	if _confirm_world != "":
-		# 预备曲已播放，直接切换到战斗场景（预备曲继续）
 		get_tree().change_scene_to_file("res://scenes/game_board.tscn")
+
+
+func _on_diff_normal_toggled(pressed: bool) -> void:
+	if pressed:
+		_selected_difficulty = 0
+		_diff_master_btn.button_pressed = false
+	else:
+		if not _diff_master_btn.button_pressed:
+			_diff_normal_btn.button_pressed = true
+
+func _on_diff_master_toggled(pressed: bool) -> void:
+	if pressed:
+		_selected_difficulty = 1
+		_diff_normal_btn.button_pressed = false
+	else:
+		if not _diff_normal_btn.button_pressed:
+			_diff_master_btn.button_pressed = true
 
 
 func _on_confirm_cancel() -> void:
@@ -266,6 +338,11 @@ func _on_pve_pressed() -> void:
 	"""人机对战 → 弹出确认出征对话框 + 播放预备曲。"""
 	print("[Menu] 人机对战 - 选择世界")
 	_play_click_sfx()
+	
+	var gc: Node = get_node_or_null("/root/GameConfig")
+	if gc:
+		gc.set_ai_difficulty(_selected_difficulty)
+		gc.set_battle_mode("pve")
 	
 	if GlobalMusic:
 		var world = GlobalMusic.pick_random_world()

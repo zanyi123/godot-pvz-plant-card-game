@@ -22,6 +22,7 @@ VersionManager="*res://scripts/version_manager.gd"
 GlobalMusic="*res://scripts/global_music.gd"
 GlobalNet="*res://scripts/global_net.gd"
 PlayerProfile="*res://scripts/player_profile.gd"
+GameConfig="*res://scripts/game_config.gd"
 
 [display]
 

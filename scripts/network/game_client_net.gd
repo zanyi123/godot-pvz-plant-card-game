@@ -20,10 +20,12 @@ func connect_to_host(ip: String, port: int = NetProtocol.LAN_PORT) -> bool:
 	_peer = StreamPeerTCP.new()
 	var err = _peer.connect_to_host(ip, port)
 	if err != OK:
-		print("[GameClient] 连接失败: %s:%d (err=%d)" % [ip, port, err])
+		if OS.has_feature("debug"):
+			print("[GameClient] 连接失败: %s:%d (err=%d)" % [ip, port, err])
 		return false
 	_running = true
-	print("[GameClient] 正在连接 %s:%d ..." % [ip, port])
+	if OS.has_feature("debug"):
+		print("[GameClient] 正在连接 %s:%d ..." % [ip, port])
 	return true
 
 ## 每帧轮询
@@ -41,7 +43,8 @@ func _process(_delta: float) -> void:
 			if not _connected:
 				_connected = true
 				connected_to_host.emit()
-				print("[GameClient] 已连接到 Host")
+				if OS.has_feature("debug"):
+					print("[GameClient] 已连接到 Host")
 			_disconnect_count = 0
 			# 读取数据
 			var available = _peer.get_available_bytes()
@@ -58,7 +61,8 @@ func _process(_delta: float) -> void:
 					_connected = false
 					disconnected_from_host.emit()
 				_running = false
-				print("[GameClient] 与 Host 断开连接")
+				if OS.has_feature("debug"):
+					print("[GameClient] 与 Host 断开连接")
 
 ## 处理接收缓冲区（只保留最新状态）
 func _process_buffer() -> void:
@@ -77,7 +81,8 @@ func _process_buffer() -> void:
 				# 收到 Host 的先手选择
 				if GlobalNet:
 					GlobalNet.first_player = payload.get("first_player", "P1")
-					print("[GameClient] 收到先手选择: %s" % GlobalNet.first_player)
+					if OS.has_feature("debug"):
+						print("[GameClient] 收到先手选择: %s" % GlobalNet.first_player)
 				first_player_received.emit(payload.get("first_player", "P1"))
 			elif msg_type == "GOODBYE":
 				_connected = false

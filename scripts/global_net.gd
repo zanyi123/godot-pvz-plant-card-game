@@ -42,7 +42,8 @@ func setup_host(host: Node, peer_n: String = "", peer_i: String = "") -> void:
 	host_node = host
 	peer_name = peer_n
 	peer_ip = peer_i
-	print("[GlobalNet] 设置为 Host, 对手: %s (%s)" % [peer_n, peer_i])
+	if OS.has_feature("debug"):
+		print("[GlobalNet] 设置为 Host, 对手: %s (%s)" % [peer_n, peer_i])
 
 ## 设置为 Client 模式
 func setup_client(client: Node, peer_n: String = "", peer_i: String = "") -> void:
@@ -54,7 +55,8 @@ func setup_client(client: Node, peer_n: String = "", peer_i: String = "") -> voi
 	client_node = client
 	peer_name = peer_n
 	peer_ip = peer_i
-	print("[GlobalNet] 设置为 Client, 对手: %s (%s)" % [peer_n, peer_i])
+	if OS.has_feature("debug"):
+		print("[GlobalNet] 设置为 Client, 对手: %s (%s)" % [peer_n, peer_i])
 
 ## 清理网络资源
 func cleanup() -> void:
@@ -74,4 +76,5 @@ func cleanup() -> void:
 	peer_name = ""
 	peer_ip = ""
 	first_player = "P1"
-	print("[GlobalNet] 已清理")
+	if OS.has_feature("debug"):
+		print("[GlobalNet] 已清理")
