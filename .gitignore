@@ -7,7 +7,9 @@ android/
 *.pck
 *.apk
 *.idsig
+*.zip
 PVZ卡牌游戏_发布版/
+release_tmp/
 
 # Godot import cache (auto-regenerated)
 *.import

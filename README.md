@@ -45,14 +45,14 @@
 
 进入本仓库的 **Releases** 页面下载最新版本：
 
-👉 **[点此直达 Releases 下载页](https://github.com/zanyi123/godot-pvz-plant-card-game/releases)**
+👉 **[点此直达 v1.3.0 下载页](https://github.com/zanyi123/godot-pvz-plant-card-game/releases/tag/v1.3.0)**
 
 下载对应平台的文件：
 
 | 平台 | 下载文件 | 说明 |
 |------|---------|------|
-| 💻 **Windows 电脑** | `PVZ卡牌游戏_vX.X.X_Windows.zip` | 解压即用，不需要安装 |
-| 📱 **Android 手机** | `PVZ卡牌游戏_vX.X.X_Android.apk` | 安装到手机即可 |
+| 💻 **Windows 电脑** | `PVZ-Card-Game_v1.3.0_Windows.zip` | 解压即用，不需要安装 |
+| 📱 **Android 手机** | `PVZ-Card-Game_v1.3.0_Android.apk` | 安装到手机即可 |
 
 > 💡 **找不到 Releases？** 在本仓库首页右侧栏，找到「Releases」标题，下面的就是最新版本。
 
@@ -68,7 +68,7 @@
 #### 安装步骤（3 步搞定）
 
 ```
-第1步：下载 PVZ卡牌游戏_vX.X.X_Windows.zip
+第1步：下载 PVZ-Card-Game_v1.3.0_Windows.zip
          ↓
 第2步：右键 → 解压到当前文件夹（或任意位置）
          ↓
@@ -97,7 +97,7 @@
 #### 安装步骤（3 步搞定）
 
 ```
-第1步：把 PVZ卡牌游戏_vX.X.X_Android.apk 传到手机
+第1步：把 PVZ-Card-Game_v1.3.0_Android.apk 传到手机
        （微信/QQ/数据线/网盘都可以）
          ↓
 第2步：在手机文件管理器里找到 APK，点击安装

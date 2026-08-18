@@ -7,7 +7,7 @@ echo ============================================
 echo.
 
 set PROJECT_DIR=%~dp0
-set GODOT="E:\项目储存\pvz-project\tools\Godot_v4.6.2-stable_win64.exe"
+set GODOT="E:\项目储存\pvz-project\pvz-godot\tools\Godot_v4.6.2-stable_win64.exe"
 set PROJECT="%PROJECT_DIR%."
 
 :: ============================================
