@@ -103,6 +103,16 @@ theme_override_fonts/font = ExtResource("3")
 theme_override_font_sizes/font_size = 16
 text = "成就框"
 
+[node name="EncyclopediaButton" type="Button" parent="." unique_id=1836451190]
+layout_mode = 1
+offset_left = 275.0
+offset_top = 569.0
+offset_right = 395.0
+offset_bottom = 611.0
+theme_override_fonts/font = ExtResource("3")
+theme_override_font_sizes/font_size = 16
+text = "图鉴"
+
 [node name="SettingsButton" type="Button" parent="." unique_id=1258914960]
 layout_mode = 1
 offset_left = 754.0
@@ -151,5 +161,5 @@ offset_right = 982.0
 offset_bottom = 671.0
 theme_override_fonts/font = ExtResource("3")
 theme_override_font_sizes/font_size = 12
-text = "v1.2 | PVZ Plant Card Game"
+text = "v1.4.0 | PVZ Plant Card Game"
 horizontal_alignment = 2

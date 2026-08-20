@@ -1,6 +1,107 @@
 # 更新日志
 
-## 2026-08-15 调试信息清理 + 中文本地化 + 工作规范
+## 2026-08-19 v1.4.0 图鉴功能 + 信箱公告补全 + Bug 修复
+
+### 新增功能
+
+**图鉴系统（主菜单 → 图鉴按钮）**
+- 新增 `encyclopedia_scene.gd` 图鉴主脚本，动态加载 `cards.json` 全部卡牌
+- 新增 `card_paint.gd` `large_mode` 属性支持 120×180 大尺寸卡牌渲染（与实战 UI 一致）
+- 新增 `bg_encyclopedia.jpg` 棕色木制相框背景图（AI 生成）
+- 主菜单 `EncyclopediaButton` 按钮接线（`main_menu.tscn` + `main_menu.gd`）
+- 每行 4 张卡牌网格布局（ScrollContainer + VBox/HBox 动态生成）
+- 7 类筛选互斥单选：全部/法/射/坦/辅/限制符:有/限制符:无
+- 右上角实时显示当前筛选结果总数
+- 右键点击卡牌弹出详情弹窗（属性 + 技能描述）
+- ESC 键或返回按钮一键退出图鉴
+
+**信箱公告补全**
+- 补写 v1.3.0 大师级人机 + 无牌强制结算公告
+- 新写 v1.4.0 图鉴功能公告
+- 原 v1.2 公告保留并修正 ID 为 `changelog_v1_2`
+
+### Bug 修复
+
+**StyleBoxFlat 属性赋值越界**（[encyclopedia_scene.gd:100](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/encyclopedia_scene.gd#L100)）
+- 问题：`set_border_width(4, 2)` 中 side=4 越界（Godot 4 `SIDE_BOTTOM=3`）
+- 修复：改为 `set_border_width(3, 2)`
+
+**StyleBoxFlat 边框/圆角直接属性赋值**（5 处）
+- 问题：`border_width_all = 3`、`border_width_bottom = 2`、`corner_radius_*` 等直接属性赋值在 Godot 4 中无效
+- 修复：统一改为方法调用 `set_border_width_all(3)`、`set_border_width(3, 2)`、`set_corner_radius_all(8)`
+
+**ButtonGroup 互斥失效**（[encyclopedia_scene.gd:98](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/encyclopedia_scene.gd#L98)）
+- 问题：`ButtonGroup.new()` 在循环内创建，7 个筛选按钮各有独立分组，互斥失效
+- 修复：在循环外创建共享 `filter_group`，所有按钮共用同一组
+
+**背景图覆盖全屏 + 透明度过高**（[encyclopedia_scene.gd:72-102](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/encyclopedia_scene.gd#L72-L102)）
+- 问题：背景图以 `STRETCH_TILE` 平铺全屏 + 半透明遮罩，导致能看穿主菜单
+- 修复：改为三层结构 — 全屏不透明 `ColorRect` 遮罩 + 居中木制 `Panel` 外框 + `TextureRect` 仅填充框内区域
+
+**背景图未缩放导致偏离**（[encyclopedia_scene.gd:91-102](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/encyclopedia_scene.gd#L91-L102)）
+- 问题：`STRETCH_KEEP_ASPECT_CENTERED` 保持比例居中导致留白偏离
+- 修复：改为 `STRETCH_SCALE` + `EXPAND_IGNORE_SIZE` + `PRESET_FULL_RECT` + offset 6px 自动适配框架大小
+
+### 版本号更新
+
+- `version_manager.gd`：1.3.0 → 1.4.0
+- `main_menu.tscn` VersionLabel：v1.2 → v1.4.0
+- `export_presets.cfg` Android version/code：1 → 10400，version/name：1.0 → 1.4.0
+
+### 涉及文件
+
+| 文件 | 改动 |
+|---|---|
+| [scripts/encyclopedia_scene.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/encyclopedia_scene.gd) | 新建 + 4 轮 bug 修复（StyleBoxFlat/ButtonGroup/背景图） |
+| [scripts/card_paint.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/card_paint.gd) | 新增 `large_mode` + `LARGE_W/H` 常量 |
+| [scripts/main_menu.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/main_menu.gd) | 新增 `encyclopedia_btn` 引用 + 信号连接 |
+| [scenes/main_menu.tscn](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scenes/main_menu.tscn) | 新增 `EncyclopediaButton` 节点 + VersionLabel 更新 |
+| [scripts/mailbox_scene.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/mailbox_scene.gd) | 补写 3 封更新公告（v1.2/v1.3/v1.4） |
+| [scripts/version_manager.gd](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/scripts/version_manager.gd) | 版本号 1.3.0 → 1.4.0 |
+| [export_presets.cfg](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/export_presets.cfg) | Android version/code + name |
+| [assets/images/bg_encyclopedia.jpg](file:///e:/项目储存/pvz-project/pvz-godot/pvz-plant-card-game/assets/images/bg_encyclopedia.jpg) | AI 生成棕色木制相框背景图 |
+
+---
+
+## 2026-08-15 v1.3.0 大师级人机 + 无牌强制结算 + 克制关系修复
+
+### 新增功能
+
+**大师级人机 AI 系统**
+- 新增 `ai_system.gd`、`ai_strategy.gd`、`ai_predictor.gd`、`ai_combo_memory.gd`、`ai_card_analyzer.gd`
+- 阵营克制计算、双卡组合策略、防守反击思维、三回合预测、卡牌记忆库
+- 难度选择：普通 / 大师（主菜单可切换）
+- 文档：`docs/大师AI设计方案.md`
+
+### Bug 修复
+
+**无牌强制结算失效**
+- 问题：双方手牌+牌库耗尽时未触发游戏结束
+- 修复：新增 `_check_no_cards()` 统一函数，覆盖 5 个关键流程点
+
+**克制关系失效**
+- 问题：辅助卡 `type=主` 但 `faction=辅` 导致主卡识别错误
+- 修复：主卡识别优先选 `faction` 为 法/射/坦 的卡
+
+**AI 不出牌**
+- 问题：无合法组合时返回空数组，AI 跳过回合
+- 修复：新增兜底逻辑强制出最小 cost 卡
+
+**伤害计算错误**
+- 问题：倍率错误应用于总伤害
+- 修复：倍率仅作用于自身卡牌攻击力，辅助卡攻击独立计算
+
+### 涉及文件
+
+- `scripts/ai_system.gd`、`scripts/ai_strategy.gd`、`scripts/ai_predictor.gd`、`scripts/ai_combo_memory.gd`、`scripts/ai_card_analyzer.gd`
+- `scripts/game_board.gd`、`scripts/effect_system.gd`、`scripts/game_config.gd`
+- `scripts/version_manager.gd` → 1.3.0
+- `scenes/main_menu.tscn`、`project.godot`、`export_presets.cfg`（难度选择）
+- `docs/大师AI设计方案.md`、`docs/战斗结算机制.md`
+
+---
+
+## 2026-08-15 v1.1.0 调试信息清理 + 中文本地化 + 工作规范
 
 ### 问题
 1. 正式打包版游戏中仍显示调试信息弹幕（如 `[DEBUG] cost=2 mana=5`）

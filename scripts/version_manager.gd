@@ -5,7 +5,7 @@ extends Node
 
 ## ======== 在这里修改版本号 ========
 const VERSION_MAJOR: int = 1
-const VERSION_MINOR: int = 3
+const VERSION_MINOR: int = 4
 const VERSION_PATCH: int = 0
 const VERSION_SUFFIX: String = ""  # 如 "beta", "rc1", "" 表示正式版
 ## ==================================

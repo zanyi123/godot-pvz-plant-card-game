@@ -179,6 +179,27 @@
 
 ---
 
+### 2026-08-19 - v1.4.0 - 图鉴功能 4 轮 bug 修复
+**描述：** 图鉴功能开发过程中连续遇到 4 个 bug
+**原因：**
+1. StyleBoxFlat 边框/圆角直接属性赋值在 Godot 4 中无效
+2. `set_border_width(4, 2)` side=4 越界（`SIDE_BOTTOM=3`）
+3. `ButtonGroup.new()` 在循环内创建，7 个按钮各有独立分组，互斥失效
+4. 背景图 `STRETCH_TILE` 平铺全屏 + 半透明遮罩，能看穿主菜单
+5. 背景 `STRETCH_KEEP_ASPECT_CENTERED` 保持比例导致留白偏离
+
+**修复（文件：scripts/encyclopedia_scene.gd）：**
+1. L86: `border_width_bottom = 2` → `set_border_width(3, 2)`（SIDE_BOTTOM=3）
+2. L171: `border_width_all = 3` → `set_border_width_all(3)`
+3. L173-176: 4 行 `corner_radius_*` 合并为 `set_corner_radius_all(8)`
+4. L98-99: 循环外创建 `var filter_group := ButtonGroup.new()`，所有按钮共用
+5. L72-102: 三层结构重构 — 全屏不透明 `ColorRect` + 居中木制 `Panel` 外框 + `TextureRect` 仅填充框内
+6. L91-102: `STRETCH_KEEP_ASPECT_CENTERED` → `STRETCH_SCALE` + `EXPAND_IGNORE_SIZE` + `PRESET_FULL_RECT` + offset 6px
+
+**测试：** 图鉴打开后看不到主菜单，背景图完整填充木制框，筛选按钮互斥生效 ✅
+
+---
+
 ## 待修复列表
 
 （暂无）

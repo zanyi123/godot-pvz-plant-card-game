@@ -11,6 +11,7 @@ extends Control
 @onready var rules_btn: Button = $RulesButton
 @onready var guide_btn: Button = $GuideButton
 @onready var quit_btn: Button = $QuitButton
+@onready var encyclopedia_btn: Button = $EncyclopediaButton
 
 # 玩家信息
 @onready var player_name_label: Label = $PlayerInfoPanel/PlayerName
@@ -53,6 +54,7 @@ func _ready() -> void:
 	rules_btn.pressed.connect(_on_rules_pressed)
 	guide_btn.pressed.connect(_on_guide_pressed)
 	quit_btn.pressed.connect(_on_quit_pressed)
+	encyclopedia_btn.pressed.connect(_on_encyclopedia_pressed)
 	
 	# 创建弹窗
 	_create_popup()
@@ -423,6 +425,22 @@ func _on_quit_pressed() -> void:
 	if GlobalMusic:
 		GlobalMusic.stop()
 	get_tree().quit()
+
+
+func _on_encyclopedia_pressed() -> void:
+	"""图鉴 → 加载图鉴界面（覆盖在主菜单上）。"""
+	print("[Menu] 图鉴")
+	_play_click_sfx()
+	var enc = Control.new()
+	enc.set_script(load("res://scripts/encyclopedia_scene.gd"))
+	enc.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(enc)
+	enc.encyclopedia_closed.connect(_on_encyclopedia_closed)
+
+
+func _on_encyclopedia_closed() -> void:
+	"""图鉴关闭后回调（场景已自行 queue_free）。"""
+	print("[Menu] 图鉴已关闭")
 
 
 # -- 工具函数 ------------------------------------------------─
